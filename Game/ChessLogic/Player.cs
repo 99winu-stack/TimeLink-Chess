@@ -1,5 +1,9 @@
 ﻿namespace ChessLogic
 {
+    /// <summary>
+    /// define the player
+    /// used to determine pieces ownership, player turns, the winner or draw
+    /// </summary>
     public enum Player
     {
         None,

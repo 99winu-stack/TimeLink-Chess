@@ -19,10 +19,16 @@ namespace GameUI
     {
         private readonly Image[,] PieceImages = new Image[8, 8];
 
+        private GameState GameState;
+
+
         public MainWindow()
         {
             InitializeComponent();
             InitilaizeBoard();
+
+            GameState = new GameState(Player.White, Board.Initial());
+            DrawBoard(GameState.Board);
         }
 
         private void InitilaizeBoard()
@@ -34,6 +40,18 @@ namespace GameUI
                     Image image = new Image();
                     PieceImages[r, c] = image;
                     PieceGrid.Children.Add(image);
+                }
+            }
+        }
+
+        private void DrawBoard(Board board)
+        {
+            for (int r = 0; r < 8; r++)
+            {
+                for (int c = 0; c < 8; c++)
+                {
+                    Piece piece = board[r,c];
+                    PieceImages[r,c].Source = Images.GetImage(piece);
                 }
             }
         }

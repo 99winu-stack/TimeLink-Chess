@@ -17,7 +17,7 @@
             return copy;
         }
 
-        private static IEnumerable<Position> PotentialToPosition(Position from)
+        private static IEnumerable<Position> PotentialToPositions(Position from)
         {
             foreach (Direction vDir in new Direction[] {Direction.North,Direction.South })
             {
@@ -31,7 +31,7 @@
 
         private IEnumerable<Position> MovePositions(Position from, Board board)
         {
-            return PotentialToPosition(from).Where(pos=> Board.IsInside(pos)
+            return PotentialToPositions(from).Where(pos=> Board.IsInside(pos)
                 && (board.IsEmpty(pos) || board[pos].Color != Color));
         }
     }

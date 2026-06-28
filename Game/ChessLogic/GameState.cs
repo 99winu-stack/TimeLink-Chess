@@ -10,6 +10,7 @@ namespace ChessLogic
     {
         public Board Board { get; }
         public Player CurentPlayer { get; private set; }
+        public Result Result { get; private set; } = null;
 
         public GameState(Player player, Board board)
         {
@@ -33,6 +34,38 @@ namespace ChessLogic
         {
             move.Execute(Board);
             CurentPlayer = CurentPlayer.Opponent();
+            CheckForGameOver();
+        }
+
+        public IEnumerable<Move> AllLegalMovesFor(Player player)
+        {
+            IEnumerable<Move> moveCandidates = Board.PiecePositionsFor(player).SelectMany(pos =>
+            {
+                Piece piece = Board[pos];
+                return piece.GetMoves(pos, Board);
+            });
+
+            return moveCandidates.Where(move => move.IsLegal(Board));
+        }
+
+        private void CheckForGameOver()
+        {
+            if (!AllLegalMovesFor(CurentPlayer).Any())
+            {
+                if (Board.IsInCheck(CurentPlayer))
+                {
+                    Result = Result.Win(CurentPlayer.Opponent());
+                }
+                else
+                {
+                    Result = Result.Draw(EndReason.Stalemate);
+                }
+            }
+        }
+
+        public bool IsGameOver()
+        {
+            return Result != null;
         }
     }
 }

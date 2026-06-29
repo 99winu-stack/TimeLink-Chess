@@ -1,4 +1,4 @@
-﻿using ChessLogic;
+﻿    using ChessLogic;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -24,7 +24,7 @@ namespace GameUI
         {
             PieceSelected?.Invoke(PieceType.Queen);
         }
-        private void BihopIMG_MouseDown(object sender, MouseButtonEventArgs e)
+        private void BishopIMG_MouseDown(object sender, MouseButtonEventArgs e)
         {
             PieceSelected?.Invoke(PieceType.Bishop);
         }

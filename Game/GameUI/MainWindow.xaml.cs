@@ -119,11 +119,9 @@ namespace GameUI
                 {
                     HandleMove(move);
                 }
-
-                    HandleMove(move);
             }
         }
-
+        
         private void HandlePromotion(Position from, Position to)
         {
             pieceImages[to.Row, to.Column].Source = Images.GetImage(gameState.CurentPlayer, PieceType.Pawn);
@@ -139,7 +137,7 @@ namespace GameUI
                 HandleMove(promMove);
             };
         }
-
+       
         private void HandleMove(Move move)
         {
             gameState.MakeMove(move);

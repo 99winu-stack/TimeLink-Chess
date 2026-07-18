@@ -24,7 +24,7 @@
             };
         }
 
-        public override void Execute(Board board)
+        public override bool Execute(Board board)
         {
             Piece pawn = board[FromPos];
             board[FromPos] = null;
@@ -32,6 +32,8 @@
             Piece promotionPiece = CreatePromotionPiece(pawn.Color);
             promotionPiece.HasMoved = true;
             board[ToPos] = promotionPiece;
+
+            return true;
         }
     }
 }

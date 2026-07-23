@@ -17,7 +17,7 @@ namespace GameUI
 
             Result result = gameState.Result;
             WinnerText.Text = GetWinnerText(result.Winner);
-            ReasonText.Text = GetReassonText(result.Reason, gameState.CurentPlayer);
+            ReasonText.Text = GetReassonText(result.Reason, gameState.CurrentPlayer);
         }
 
         private static string GetWinnerText(Player winner)

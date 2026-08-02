@@ -124,10 +124,10 @@ namespace GameUI
         
         private void HandlePromotion(Position from, Position to)
         {
-            pieceImages[to.Row, to.Column].Source = Images.GetImage(gameState.CurentPlayer, PieceType.Pawn);
+            pieceImages[to.Row, to.Column].Source = Images.GetImage(gameState.CurrentPlayer, PieceType.Pawn);
             pieceImages[from.Row, from.Column].Source = null;
 
-            PromotionMenu promMenu = new PromotionMenu(gameState.CurentPlayer);
+            PromotionMenu promMenu = new PromotionMenu(gameState.CurrentPlayer);
             MenuContainer.Content = promMenu;
 
             promMenu.PieceSelected += type =>

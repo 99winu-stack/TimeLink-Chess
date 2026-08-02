@@ -5,32 +5,76 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameUI"
         mc:Ignorable="d"
-        Title="Chess" Width="600" SizeToContent="Height"
+        Title="Time Link Chess" MinWidth="1200" MinHeight="800"
         Icon="/Assets/icon.ico"
         WindowStartupLocation="CenterScreen"
         Background="Black"
         KeyDown="Window_KeyDown">
-    <Viewbox>
-        <Grid x:Name="BoardGrid"
-              Width="600"
-              Height="600"
-              MouseDown="BoardGrid_MouseDown">
-            <Grid.Background>
-                <ImageBrush ImageSource="/Assets/board.png"></ImageBrush>
-            </Grid.Background>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <!-- left panel shows history of moves from other boards -->
+        <Border Grid.Column="0"
+                x:Name="GamePanelLeft"
+                Margin="10"
+                CornerRadius="15"
+                Background="LightGray"
+                HorizontalAlignment="Center">
+            <Viewbox>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </Viewbox>
+        </Border>
+        <!-- board -->
+        <Border Grid.Column="1"
+                Margin="10">
+            <Viewbox>
+                <Grid x:Name="BoardGrid"
+                  Width="600"
+                  Height="600"
+                  MouseDown="BoardGrid_MouseDown">
+                    <Grid.Background>
+                        <ImageBrush ImageSource="/Assets/board.png"></ImageBrush>
+                    </Grid.Background>
 
-            <UniformGrid x:Name="HighLightGrid"
-                         Rows="8"
-                         Columns="8">
-            </UniformGrid>
+                    <UniformGrid x:Name="HighLightGrid"
+                             Rows="8"
+                             Columns="8">
+                    </UniformGrid>
 
-            <UniformGrid x:Name="PieceGrid"
-                         Rows="8"
-                         Columns="8"
-                         RenderOptions.BitmapScalingMode="HighQuality">
-            </UniformGrid>
+                    <UniformGrid x:Name="PieceGrid"
+                             Rows="8"
+                             Columns="8"
+                             RenderOptions.BitmapScalingMode="HighQuality">
+                    </UniformGrid>
 
-            <ContentControl x:Name="MenuContainer"/>
-        </Grid>
-    </Viewbox>
+                    <ContentControl x:Name="MenuContainer"/>
+                </Grid>
+            </Viewbox>
+        </Border>
+        <!-- right panel shows history of current boards, extra information and game controls-->
+        <Border Grid.Column="2"
+                x:Name="GamePanelRight"
+                Margin="10"
+                CornerRadius="15"
+                Background="LightGray"
+                HorizontalAlignment="Center">
+            <Viewbox>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </Viewbox>
+        </Border>
+    </Grid>
+
 </Window>

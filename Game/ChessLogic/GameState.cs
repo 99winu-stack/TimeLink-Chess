@@ -12,6 +12,8 @@ namespace ChessLogic
         public Player CurrentPlayer { get; private set; }
         public Result Result { get; private set; } = null;
 
+        private readonly List<MoveHistory> moveHistory = new List<MoveHistory>();
+
         private int noCaptureOrPawnMoves = 0;
         private string stateString;
         private readonly Dictionary<string, int> stateHistory = new Dictionary<string, int>();
@@ -41,6 +43,8 @@ namespace ChessLogic
         {
             Board.SetPawnSkipPosition(CurrentPlayer, null);
             bool captureOrPawn = move.Execute(Board);
+
+            moveHistory.Add(new MoveHistory(move, Board.Copy()));
 
             if (captureOrPawn)
             {

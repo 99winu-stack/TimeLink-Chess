@@ -32,6 +32,14 @@
             return HashCode.Combine(Row, Column);
         }
 
+        public override string ToString()
+        {
+            char file = (char)('a' + Column);
+            int rank = 8 - Row;
+
+            return $"{file}{rank}";
+        }
+
         public static bool operator ==(Position left, Position right)
         {
             return EqualityComparer<Position>.Default.Equals(left, right);

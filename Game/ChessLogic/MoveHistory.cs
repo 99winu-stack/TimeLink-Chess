@@ -16,5 +16,7 @@ namespace ChessLogic
             Move = move;
             Board = board;
         }
+
+        public string MoveText => $"{Move.FromPos} -> {Move.ToPos}";
     }
 }

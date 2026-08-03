@@ -153,9 +153,9 @@ namespace GameUI
         {
             MoveHistoryList.Items.Clear();
 
-            foreach (MoveHistory history in gameState.MoveHistory)
+            foreach (MoveHistory moveHistory in gameState.MoveHistory)
             {
-                MoveHistoryList.Items.Add(history.MoveText);
+                MoveHistoryList.Items.Add(moveHistory.MoveText);
             }
         }
         private void CacheMoves(IEnumerable<Move> moves)

@@ -72,6 +72,13 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+                    
+                    <ListBox x:Name="MoveHistoryList"
+                             Grid.Row="0"
+                             Margin="10"
+                             FontSize="14"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    </ListBox>
                 </Grid>
             </Viewbox>
         </Border>

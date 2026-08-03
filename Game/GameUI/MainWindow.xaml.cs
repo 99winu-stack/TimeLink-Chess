@@ -142,13 +142,22 @@ namespace GameUI
         {
             gameState.MakeMove(move);
             DrawBoard(gameState.Board);
+            UpdateMoveHistory();
 
             if (gameState.IsGameOver())
             {
                 ShowGameOver();
             }
         }
+        private void UpdateMoveHistory()
+        {
+            MoveHistoryList.Items.Clear();
 
+            foreach (MoveHistory history in gameState.MoveHistory)
+            {
+                MoveHistoryList.Items.Add(history.MoveText);
+            }
+        }
         private void CacheMoves(IEnumerable<Move> moves)
         {
             moveCache.Clear();

@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using ChessLogic;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -9,7 +11,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
-using ChessLogic;
 
 namespace GameUI
 {
@@ -23,6 +24,8 @@ namespace GameUI
         private readonly Dictionary<Position, Move> moveCache = new Dictionary<Position, Move>();
 
         private GameState gameState;
+        private GameState timeStateWhite;
+        private GameState timeStateBlack;
         private Position selectedPos = null;
 
 
@@ -137,27 +140,78 @@ namespace GameUI
                 HandleMove(promMove);
             };
         }
-       
+
+        private GameState GetGameState()
+        {
+            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+
+            if (selectedHistory == null || MoveHistoryList.SelectedIndex >= gameState.MoveHistory.Count - 1)
+            {
+                return gameState;
+            }
+
+            if (selectedHistory.NextPlayer == Player.Black)
+            {
+                if (timeStateBlack == null)
+                {
+                    timeStateBlack = new GameState(
+                        selectedHistory.NextPlayer,
+                        selectedHistory.Board.Copy());
+                }
+
+                return timeStateBlack;
+            }
+
+            if (selectedHistory.NextPlayer == Player.White)
+            {
+                if (timeStateWhite == null)
+                {
+                    timeStateWhite = new GameState(
+                        selectedHistory.NextPlayer,
+                        selectedHistory.Board.Copy());
+                }
+
+                return timeStateWhite;
+            }
+
+            return gameState;
+        }
+
         private void HandleMove(Move move)
         {
-            gameState.MakeMove(move);
-            DrawBoard(gameState.Board);
-            UpdateMoveHistory();
+            GameState currentState = GetGameState();
 
-            if (gameState.IsGameOver())
-            {
+            currentState.MakeMove(move);
+            DrawBoard(currentState.Board);
+            UpdateMoveHistory(currentState);
+
+            if (currentState.IsGameOver())
+            {   
                 ShowGameOver();
             }
         }
-        private void UpdateMoveHistory()
+
+        private void UpdateMoveHistory(GameState currentState)
         {
             MoveHistoryList.Items.Clear();
 
-            foreach (MoveHistory moveHistory in gameState.MoveHistory)
+            foreach (MoveHistory moveHistory in currentState.MoveHistory)
             {
-                MoveHistoryList.Items.Add(moveHistory.MoveText);
+                MoveHistoryList.Items.Add(moveHistory);
             }
         }
+
+        private void MoveHistoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MoveHistory selectedHistory = (MoveHistory)MoveHistoryList.SelectedItem;
+            if (selectedHistory == null)
+            {
+                return;
+            }
+
+            DrawBoard(selectedHistory.Board);
+        }
+
         private void CacheMoves(IEnumerable<Move> moves)
         {
             moveCache.Clear();

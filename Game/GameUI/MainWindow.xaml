@@ -77,7 +77,8 @@
                              Grid.Row="0"
                              Margin="10"
                              FontSize="14"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             SelectionChanged="MoveHistoryList_SelectionChanged">
                     </ListBox>
                 </Grid>
             </Viewbox>

@@ -45,7 +45,7 @@ namespace ChessLogic
             Board.SetPawnSkipPosition(CurrentPlayer, null);
             bool captureOrPawn = move.Execute(Board);
             
-            moveHistory.Add(new MoveHistory(move, Board.Copy()));
+            moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent()));
 
             if (captureOrPawn)
             {

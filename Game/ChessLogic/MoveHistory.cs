@@ -10,13 +10,18 @@ namespace ChessLogic
     {
         public Move Move { get; }
         public Board Board { get; }
+        public Player NextPlayer {  get; }
 
-        public MoveHistory(Move move, Board board)
+        public MoveHistory(Move move, Board board, Player nextPlayer)
         {
             Move = move;
             Board = board;
+            NextPlayer = nextPlayer;
         }
 
-        public string MoveText => $"{Move.FromPos} -> {Move.ToPos}";
+        public override string ToString()
+        {
+            return $"{Move.FromPos} -> {Move.ToPos}";
+        }
     }
 }

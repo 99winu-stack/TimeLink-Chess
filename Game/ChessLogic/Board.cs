@@ -122,6 +122,10 @@ namespace ChessLogic
             {
                 copy[pos] = this[pos].Copy();
             }
+
+            copy.pawnSkipPositions[Player.White] = pawnSkipPositions[Player.White];
+            copy.pawnSkipPositions[Player.Black] = pawnSkipPositions[Player.Black];
+
             return copy;
         }
 

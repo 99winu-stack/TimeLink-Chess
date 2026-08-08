@@ -211,7 +211,7 @@ namespace GameUI
                 HandleMove(promMove);
             };
         }
-        // TODO: Rewrite after implementing the GameState UI
+        
         private GameState GetGameState(BoardType boardType)
         {
             return boardType switch

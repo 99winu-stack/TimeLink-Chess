@@ -5,17 +5,25 @@
         public override PieceType Type => PieceType.Pawn;
         public override Player Color { get; }
 
-        private readonly Direction forward;
+        private Direction forward;
 
         public Pawn(Player color)
         {
             Color = color;
-
+            PawnForwardDirection(color);
+        }
+        public Pawn(Player color, Guid id) : base(id)
+        {
+            Color = color;
+            PawnForwardDirection(color);
+        }
+        private void PawnForwardDirection(Player color)
+        {
             if (color == Player.White)
             {
                 forward = Direction.North;
             }
-            else if(color == Player.Black)
+            else if (color == Player.Black)
             {
                 forward = Direction.South;
             }
@@ -23,7 +31,7 @@
 
         public override Piece Copy()
         {
-            Pawn copy = new Pawn(Color);
+            Pawn copy = new Pawn(Color, Id);
             copy.HasMoved = HasMoved;
             return copy;
         }

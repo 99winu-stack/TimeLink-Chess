@@ -14,10 +14,14 @@
         {
             Color = color;
         }
+        public Rook(Player color,Guid id) : base(id)
+        {
+            Color = color;
+        }
 
         public override Piece Copy()
         {
-            Rook copy = new Rook(Color);
+            Rook copy = new Rook(Color, Id);
             copy.HasMoved = HasMoved;
             return copy;
         }

@@ -15,10 +15,14 @@
         {
             Color = color;
         }
+        public Queen(Player color, Guid id) : base(id)
+        {
+            Color = color;
+        }
 
         public override Piece Copy()
         {
-            Queen copy = new Queen(Color);
+            Queen copy = new Queen(Color, Id);
             copy.HasMoved = HasMoved;
             return copy;
         }

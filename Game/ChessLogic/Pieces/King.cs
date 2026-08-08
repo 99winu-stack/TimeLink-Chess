@@ -15,6 +15,10 @@
         {
             Color = color;
         }
+        public King(Player color, Guid id) : base(id)
+        {
+            Color = color;
+        }
 
         private static bool IsUnmovedRook(Position pos,Board board)
         {
@@ -60,7 +64,7 @@
 
         public override Piece Copy()
         {
-            King copy = new King(Color);
+            King copy = new King(Color, Id);
             copy.HasMoved = HasMoved;
             return copy;
         }

@@ -9,10 +9,14 @@
         {
             Color = color;
         }
+        public Knight(Player color, Guid id) : base(id)
+        {
+            Color = color;
+        }
 
         public override Piece Copy()
         {
-            Knight copy = new Knight(Color);
+            Knight copy = new Knight(Color, Id);
             copy.HasMoved = HasMoved;
             return copy;
         }

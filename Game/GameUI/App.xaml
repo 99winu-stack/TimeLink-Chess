@@ -4,10 +4,10 @@
              xmlns:local="clr-namespace:GameUI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="StrokeColor">#260000</SolidColorBrush>
-        <SolidColorBrush x:Key="FillColor">#cc380404</SolidColorBrush>
-        <SolidColorBrush x:Key="textColor">#ffa274</SolidColorBrush>
-        <SolidColorBrush x:Key="ButtonColor">#730909</SolidColorBrush>
+        <SolidColorBrush x:Key="StrokeColor">#6C4AB6</SolidColorBrush>
+        <SolidColorBrush x:Key="FillColor">#211B3A</SolidColorBrush>
+        <SolidColorBrush x:Key="textColor">#F0E9FF</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonColor">#302451</SolidColorBrush>
 
         <Style TargetType="Border" x:Key="BorderStyle">
             <Setter Property="BorderThickness" Value="4"/>
@@ -17,15 +17,17 @@
         </Style>
 
         <Style TargetType="TextBlock" x:Key="TextStyle">
-            <Setter Property="FontFamily" Value="Segoe UI Light"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource textColor}"/>
         </Style>
 
         <Style TargetType="Button" x:Key="ButtonStyle">
-            <Setter Property="FontFamily" Value="Segoe UI Light"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="BorderBrush" Value="{StaticResource StrokeColor}"/>
             <Setter Property="Background" Value="{StaticResource ButtonColor}"/>
@@ -36,5 +38,15 @@
                 </Style>
             </Style.Resources>
         </Style>
+
+        <Style TargetType="ListBox" x:Key="ListStyle">
+            <Setter Property="Background" Value="#2A2A35"/>
+            <Setter Property="BorderBrush" Value="#6C4AB6"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Foreground" Value="#F5F5F5"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="28"/>
+        </Style>
+
     </Application.Resources>
 </Application>

@@ -16,21 +16,51 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <!-- left panel shows history of moves from other boards -->
+        <!-- left panel allow board selection and show game information -->
         <Border Grid.Column="0"
                 x:Name="GamePanelLeft"
                 Margin="10"
                 CornerRadius="15"
-                Background="LightGray"
-                HorizontalAlignment="Center">
-            <Viewbox>
-                <Grid>
+                Background="{StaticResource FillColor}"
+                HorizontalAlignment="Stretch">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="200"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0"
+                      Name="BoardSelector">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0"
+                            Content="Main Board"
+                            Margin="10"
+                            Style="{StaticResource ButtonStyle}"
+                            Click="MainBoard_Click"/>
+
+                    <Button Grid.Row="1"
+                            Content="Timeline White"
+                            Margin="10"
+                            Style="{StaticResource ButtonStyle}"
+                            Click="TimelineWhite_Click"/>
+
+                    <Button Grid.Row="2"
+                            Content="Timeline Black"
+                            Margin="10"
+                            Style="{StaticResource ButtonStyle}"
+                            Click="TimelineBlack_Click"/>
                 </Grid>
-            </Viewbox>
+
+                <Grid Grid.Row="1"
+                      Name="GameInfo">
+
+                </Grid>
+            </Grid>
         </Border>
         <!-- board -->
         <Border Grid.Column="1"
@@ -59,30 +89,47 @@
                 </Grid>
             </Viewbox>
         </Border>
-        <!-- right panel shows history of current boards, extra information and game controls-->
+        <!-- right panel shows history of current boards and game controls-->
         <Border Grid.Column="2"
                 x:Name="GamePanelRight"
                 Margin="10"
                 CornerRadius="15"
-                Background="LightGray"
-                HorizontalAlignment="Center">
-            <Viewbox>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                Background="{StaticResource FillColor}"
+                HorizontalAlignment="Stretch">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <ListBox x:Name="MoveHistoryList"
+                         Grid.Row="0"
+                         Margin="10"
+                         Style="{StaticResource ListStyle}"
+                         Width="auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionChanged="MoveHistoryList_SelectionChanged">
+                    <!-- <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"/>
+
+                                <TextBlock Grid.Column="1"/>
+                                
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate> -->
+                </ListBox>
+
+                <Grid Grid.Row="1"
+                      Name="GameOptions">
                     
-                    <ListBox x:Name="MoveHistoryList"
-                             Grid.Row="0"
-                             Margin="10"
-                             FontSize="14"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             SelectionChanged="MoveHistoryList_SelectionChanged">
-                    </ListBox>
                 </Grid>
-            </Viewbox>
+            </Grid>
         </Border>
     </Grid>
-
 </Window>

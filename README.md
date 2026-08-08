@@ -8,6 +8,14 @@ A chess game with a unique timeline-linking mechanic.
 - If a piece is captured in one timeline, it is removed from every timeline.
 - If a pawn is promoted in one timeline, it is promoted in every timeline.
 
+# Timeline Rules
+- A player can only create a new timeline in their own turn.
+- When creating a timeline from a previous board state, the player must be the player whose turn it is in that history state.
+- A player cannot create a new timeline if any piece belonging to the opponent has been captured since the selected history position.
+- Each player can create only one timeline.
+- Every board must be played at least once within four own turns. A player cannot ignore a board indefinitely.
+- A player may create a new timeline while in check only if the move on the new timeline resolves the check.
+
 # Development
 - This project starts by implementing a classic chess game following a YouTube tutorial:
 https://www.youtube.com/watch?v=GEkSE6eZMGc&list=PLFk1_lkqT8MahHPi40ON-jyo5wiqnyHsL&index=1

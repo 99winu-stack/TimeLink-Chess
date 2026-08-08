@@ -26,8 +26,10 @@ namespace GameUI
         private GameState gameState;
         private GameState timeStateWhite;
         private GameState timeStateBlack;
-        private Position selectedPos = null;
+        private GameState currentState;
+        private GameState historyState;
 
+        private Position selectedPos = null;
 
         public MainWindow()
         {
@@ -35,7 +37,10 @@ namespace GameUI
             InitilaizeBoard();
 
             gameState = new GameState(Player.White, Board.Initial());
-            DrawBoard(gameState.Board);
+            timeStateWhite = null;
+            timeStateBlack = null;
+            currentState = gameState;
+            DrawBoard(currentState.Board);
         }
 
         private void InitilaizeBoard()
@@ -95,9 +100,71 @@ namespace GameUI
             return new Position(row, col);
         }
 
+        private bool IsCorrectPlayer()
+        {
+            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+
+            if (selectedHistory == null)
+            {
+                return true;
+            }
+
+            return selectedHistory.NextPlayer == gameState.CurrentPlayer;
+        }
+
+        private bool CanCreateTimeline()
+        {
+            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+
+            if (selectedHistory == null)
+            {
+                return false;
+            }
+
+            if (selectedHistory.NextPlayer == Player.White)
+            {
+                return timeStateWhite == null;
+            }
+            if (selectedHistory.NextPlayer == Player.Black)
+            {
+                return timeStateBlack == null;
+            }
+
+            return false;
+        }
+
+        private void CreateTimeline()
+        {
+            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+
+            if (selectedHistory.NextPlayer == Player.White)
+            {
+                timeStateWhite = new GameState(
+                    selectedHistory.NextPlayer,
+                    selectedHistory.Board.Copy());
+                currentState = timeStateWhite;
+            }
+            else
+            {
+                timeStateBlack = new GameState(
+                    selectedHistory.NextPlayer,
+                    selectedHistory.Board.Copy());
+                currentState = timeStateBlack;
+            }
+        }
+
         private void OnFromPositionSelected(Position pos)
         {
-            IEnumerable<Move> moves = gameState.LegalMovesForPiece(pos);
+            if(!IsCorrectPlayer())
+            {
+                return;
+            }
+            if (CanCreateTimeline())
+            {
+                CreateTimeline();
+            }
+
+            IEnumerable<Move> moves = currentState.LegalMovesForPiece(pos);
 
             if (moves.Any())
             {
@@ -127,10 +194,10 @@ namespace GameUI
         
         private void HandlePromotion(Position from, Position to)
         {
-            pieceImages[to.Row, to.Column].Source = Images.GetImage(gameState.CurrentPlayer, PieceType.Pawn);
+            pieceImages[to.Row, to.Column].Source = Images.GetImage(currentState.CurrentPlayer, PieceType.Pawn);
             pieceImages[from.Row, from.Column].Source = null;
 
-            PromotionMenu promMenu = new PromotionMenu(gameState.CurrentPlayer);
+            PromotionMenu promMenu = new PromotionMenu(currentState.CurrentPlayer);
             MenuContainer.Content = promMenu;
 
             promMenu.PieceSelected += type =>
@@ -140,7 +207,7 @@ namespace GameUI
                 HandleMove(promMove);
             };
         }
-
+        // TODO: Rewrite after implementing the GameState UI
         private GameState GetGameState()
         {
             MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
@@ -152,25 +219,11 @@ namespace GameUI
 
             if (selectedHistory.NextPlayer == Player.Black)
             {
-                if (timeStateBlack == null)
-                {
-                    timeStateBlack = new GameState(
-                        selectedHistory.NextPlayer,
-                        selectedHistory.Board.Copy());
-                }
-
                 return timeStateBlack;
             }
 
             if (selectedHistory.NextPlayer == Player.White)
             {
-                if (timeStateWhite == null)
-                {
-                    timeStateWhite = new GameState(
-                        selectedHistory.NextPlayer,
-                        selectedHistory.Board.Copy());
-                }
-
                 return timeStateWhite;
             }
 
@@ -179,7 +232,7 @@ namespace GameUI
 
         private void HandleMove(Move move)
         {
-            GameState currentState = GetGameState();
+            currentState = GetGameState();
 
             currentState.MakeMove(move);
             DrawBoard(currentState.Board);
@@ -209,7 +262,12 @@ namespace GameUI
                 return;
             }
 
-            DrawBoard(selectedHistory.Board);
+            historyState = new GameState(
+                selectedHistory.NextPlayer,
+                selectedHistory.Board.Copy());
+
+            currentState = historyState;
+            DrawBoard(historyState.Board);
         }
 
         private void CacheMoves(IEnumerable<Move> moves)
@@ -247,7 +305,7 @@ namespace GameUI
 
         private void ShowGameOver()
         {
-            GameOverMenu gameOverMenu = new GameOverMenu(gameState);
+            GameOverMenu gameOverMenu = new GameOverMenu(currentState);
             MenuContainer.Content = gameOverMenu;
 
             gameOverMenu.OptionSelected += option =>
@@ -269,8 +327,11 @@ namespace GameUI
             selectedPos = null;
             HideHighLights();
             moveCache.Clear();
+            timeStateWhite = null;
+            timeStateBlack = null;
             gameState = new GameState(Player.White, Board.Initial());
-            DrawBoard(gameState.Board);
+            currentState = gameState;
+            DrawBoard(currentState.Board);
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)

@@ -9,7 +9,7 @@ A chess game with a unique timeline-linking mechanic.
 - If a pawn is promoted in one timeline, it is promoted in every timeline.
 
 # Timeline Rules
-- A player can only create a new timeline in their own turn.
+- A player can only create a new timeline during their own turn.
 - When creating a timeline from a previous board state, the player must be the player whose turn it is in that history state.
 - A player cannot create a new timeline if any piece belonging to the opponent has been captured since the selected history position.
 - Each player can create only one timeline.

@@ -23,6 +23,7 @@ namespace GameUI
         private readonly Rectangle[,] highlights = new Rectangle[8, 8];
         private readonly Dictionary<Position, Move> moveCache = new Dictionary<Position, Move>();
 
+        private BoardType currentBoard;
         private GameState gameState;
         private GameState timeStateWhite;
         private GameState timeStateBlack;
@@ -39,7 +40,8 @@ namespace GameUI
             gameState = new GameState(Player.White, Board.Initial());
             timeStateWhite = null;
             timeStateBlack = null;
-            currentState = gameState;
+            currentBoard = BoardType.Main;
+            currentState = GetGameState(currentBoard);
             DrawBoard(currentState.Board);
         }
 
@@ -142,15 +144,17 @@ namespace GameUI
                 timeStateWhite = new GameState(
                     selectedHistory.NextPlayer,
                     selectedHistory.Board.Copy());
-                currentState = timeStateWhite;
+                currentBoard = BoardType.TimelineWhite;
             }
             else
             {
                 timeStateBlack = new GameState(
                     selectedHistory.NextPlayer,
                     selectedHistory.Board.Copy());
-                currentState = timeStateBlack;
+                currentBoard = BoardType.TimelineBlack;
             }
+
+            currentState = GetGameState(currentBoard);
         }
 
         private void OnFromPositionSelected(Position pos)
@@ -208,31 +212,20 @@ namespace GameUI
             };
         }
         // TODO: Rewrite after implementing the GameState UI
-        private GameState GetGameState()
+        private GameState GetGameState(BoardType boardType)
         {
-            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
-
-            if (selectedHistory == null || MoveHistoryList.SelectedIndex >= gameState.MoveHistory.Count - 1)
+            return boardType switch
             {
-                return gameState;
-            }
-
-            if (selectedHistory.NextPlayer == Player.Black)
-            {
-                return timeStateBlack;
-            }
-
-            if (selectedHistory.NextPlayer == Player.White)
-            {
-                return timeStateWhite;
-            }
-
-            return gameState;
+                BoardType.Main => gameState,
+                BoardType.TimelineWhite => timeStateWhite,
+                BoardType.TimelineBlack => timeStateBlack,
+                _ => gameState
+            };
         }
 
         private void HandleMove(Move move)
         {
-            currentState = GetGameState();
+            currentState = GetGameState(currentBoard);
 
             currentState.MakeMove(move);
             DrawBoard(currentState.Board);
@@ -251,6 +244,12 @@ namespace GameUI
             foreach (MoveHistory moveHistory in currentState.MoveHistory)
             {
                 MoveHistoryList.Items.Add(moveHistory);
+            }
+
+            if (MoveHistoryList.Items.Count > 0)
+            {
+                MoveHistoryList.ScrollIntoView(
+                    MoveHistoryList.Items[MoveHistoryList.Items.Count - 1]);
             }
         }
 
@@ -282,7 +281,7 @@ namespace GameUI
 
         private void ShowHighLights()
         {
-            Color color = Color.FromArgb(150, 125, 255, 125);
+            Color color = Color.FromArgb(150, 100, 220, 255);
 
             foreach (Position to in moveCache.Keys)
             {
@@ -330,7 +329,8 @@ namespace GameUI
             timeStateWhite = null;
             timeStateBlack = null;
             gameState = new GameState(Player.White, Board.Initial());
-            currentState = gameState;
+            currentBoard = BoardType.Main;
+            currentState = GetGameState(currentBoard);
             DrawBoard(currentState.Board);
         }
 
@@ -356,6 +356,41 @@ namespace GameUI
                     RestartGame();
                 }
             };
+        }
+
+        private void MainBoard_Click(object sender, RoutedEventArgs e)
+        {
+            currentBoard = BoardType.Main;
+            currentState = GetGameState(currentBoard);
+
+            DrawBoard(currentState.Board);
+            UpdateMoveHistory(currentState);
+        }
+            
+        private void TimelineWhite_Click(object sender, RoutedEventArgs e)
+        {
+            if(timeStateWhite == null)
+            {
+                return;
+            }
+            currentBoard = BoardType.TimelineWhite;
+            currentState = GetGameState(currentBoard);
+
+            DrawBoard(currentState.Board);
+            UpdateMoveHistory(currentState);
+        }
+
+        private void TimelineBlack_Click(object sender, RoutedEventArgs e)
+        {
+            if(timeStateBlack == null)
+            {
+                return;
+            }
+            currentBoard = BoardType.TimelineBlack;
+            currentState = GetGameState(currentBoard);
+
+            DrawBoard(currentState.Board);
+            UpdateMoveHistory(currentState);
         }
     }
 }

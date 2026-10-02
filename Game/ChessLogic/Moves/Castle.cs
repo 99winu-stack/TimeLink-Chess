@@ -36,12 +36,12 @@ namespace ChessLogic
             }
         }
 
-        public override bool Execute(Board board)
+        public override MoveResult Execute(Board board)
         {
             new NormalMove(FromPos, ToPos).Execute(board);
             new NormalMove(rookFromPos, rookToPos).Execute(board);
 
-            return false;
+            return new MoveResult(null, false);
         }
 
         public override bool IsLegal(Board board)

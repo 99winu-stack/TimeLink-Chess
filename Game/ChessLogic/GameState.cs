@@ -40,14 +40,14 @@ namespace ChessLogic
             return MoveCandidates.Where(move => move.IsLegal(Board));
         }
 
-        public void MakeMove(Move move)
+        public Guid? MakeMove(Move move)
         {
             Board.SetPawnSkipPosition(CurrentPlayer, null);
-            bool captureOrPawn = move.Execute(Board);
+            MoveResult result = move.Execute(Board);
             
             moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent()));
 
-            if (captureOrPawn)
+            if (result.CaptureOrPawn)
             {
                 noCaptureOrPawnMoves = 0;
                 stateHistory.Clear();
@@ -60,6 +60,8 @@ namespace ChessLogic
             CurrentPlayer = CurrentPlayer.Opponent();
             UpdateStateString();
             CheckForGameOver();
+
+            return result.CapturedPiece?.Id;
         }
 
         public IEnumerable<Move> AllLegalMovesFor(Player player)

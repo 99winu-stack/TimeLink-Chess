@@ -14,12 +14,14 @@
             capturePos = new Position(from.Row, to.Column);
         }
 
-        public override bool Execute(Board board)
+        public override MoveResult Execute(Board board)
         {
+            Piece capturedPiece = board[capturePos];
+
             new NormalMove(FromPos, ToPos).Execute(board);
             board[capturePos] = null;
 
-            return true;
+            return new MoveResult(capturedPiece, true);
         }
     }
 }

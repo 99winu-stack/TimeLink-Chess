@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -186,6 +187,31 @@ namespace ChessLogic
         private Position FindPiece(Player color, PieceType type)
         {
             return PiecePositionsFor(color).First(pos => this[pos].Type == type);
+        }
+
+        private Position? FindPieceWithID(Guid id)
+        {
+            foreach (Position pos in PiecePositions())
+            {
+                Piece piece = this[pos];
+
+                if (piece != null && piece.Id == id)
+                {
+                    return pos;
+                }
+            }
+
+            return null;
+        }
+
+        public void RemovePieceWithID(Guid id)
+        {
+            Position? pos = FindPieceWithID(id);
+
+            if (pos != null)
+            {
+                this[pos] = null;
+            }
         }
 
         private bool IsUnmovedKingAndRook(Position kingPos, Position rookPos)

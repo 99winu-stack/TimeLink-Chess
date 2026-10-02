@@ -24,16 +24,18 @@
             };
         }
 
-        public override bool Execute(Board board)
+        public override MoveResult Execute(Board board)
         {
             Piece pawn = board[FromPos];
+            Piece capturedPiece = board[ToPos];
+
             board[FromPos] = null;
 
             Piece promotionPiece = CreatePromotionPiece(pawn.Color);
             promotionPiece.HasMoved = true;
             board[ToPos] = promotionPiece;
 
-            return true;
+            return new MoveResult(capturedPiece, true);
         }
     }
 }

@@ -122,6 +122,10 @@ namespace GameUI
             {
                 return false;
             }
+            if(MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1)
+            {
+                return false;
+            }
 
             if (selectedHistory.NextPlayer == Player.White)
             {
@@ -155,6 +159,14 @@ namespace GameUI
             }
 
             currentState = GetGameState(currentBoard);
+        }
+
+        private void RemovePieceFromAllBoards(Guid id)
+        {
+            gameState.Board.RemovePieceWithID(id);
+
+            timeStateWhite?.Board.RemovePieceWithID(id);
+            timeStateBlack?.Board.RemovePieceWithID(id);
         }
 
         private void OnFromPositionSelected(Position pos)
@@ -227,7 +239,13 @@ namespace GameUI
         {
             currentState = GetGameState(currentBoard);
 
-            currentState.MakeMove(move);
+            Guid? capturedPieceId = currentState.MakeMove(move);
+
+            if (capturedPieceId.HasValue)
+            {
+                RemovePieceFromAllBoards(capturedPieceId.Value);
+            }
+
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
 

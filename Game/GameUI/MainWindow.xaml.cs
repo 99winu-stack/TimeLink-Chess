@@ -1,16 +1,9 @@
 ﻿using ChessLogic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Xml.Serialization;
 
 namespace GameUI
 {
@@ -24,11 +17,9 @@ namespace GameUI
         private readonly Dictionary<Position, Move> moveCache = new Dictionary<Position, Move>();
 
         private BoardType currentBoard;
-        private GameState gameState;
-        private GameState timeStateWhite;
-        private GameState timeStateBlack;
-        private GameState currentState;
+        private GameSession session;
         private GameState historyState;
+        private GameState currentState => session.GetBoardState(currentBoard);
 
         private Position selectedPos = null;
 
@@ -37,11 +28,8 @@ namespace GameUI
             InitializeComponent();
             InitilaizeBoard();
 
-            gameState = new GameState(Player.White, Board.Initial());
-            timeStateWhite = null;
-            timeStateBlack = null;
+            session = new GameSession(new GameState(Player.White, Board.Initial()));
             currentBoard = BoardType.Main;
-            currentState = GetGameState(currentBoard);
             DrawBoard(currentState.Board);
         }
 
@@ -102,85 +90,25 @@ namespace GameUI
             return new Position(row, col);
         }
 
-        private bool IsCorrectPlayer()
-        {
-            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
-
-            if (selectedHistory == null)
-            {
-                return true;
-            }
-
-            return selectedHistory.NextPlayer == gameState.CurrentPlayer;
-        }
-
-        private bool CanCreateTimeline()
-        {
-            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
-
-            if (selectedHistory == null)
-            {
-                return false;
-            }
-            if(MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1)
-            {
-                return false;
-            }
-
-            if (selectedHistory.NextPlayer == Player.White)
-            {
-                return timeStateWhite == null;
-            }
-            if (selectedHistory.NextPlayer == Player.Black)
-            {
-                return timeStateBlack == null;
-            }
-
-            return false;
-        }
-
-        private void CreateTimeline()
-        {
-            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
-
-            if (selectedHistory.NextPlayer == Player.White)
-            {
-                timeStateWhite = new GameState(
-                    selectedHistory.NextPlayer,
-                    selectedHistory.Board.Copy());
-                currentBoard = BoardType.TimelineWhite;
-            }
-            else
-            {
-                timeStateBlack = new GameState(
-                    selectedHistory.NextPlayer,
-                    selectedHistory.Board.Copy());
-                currentBoard = BoardType.TimelineBlack;
-            }
-
-            currentState = GetGameState(currentBoard);
-        }
-
-        private void RemovePieceFromAllBoards(Guid id)
-        {
-            gameState.Board.RemovePieceWithID(id);
-
-            timeStateWhite?.Board.RemovePieceWithID(id);
-            timeStateBlack?.Board.RemovePieceWithID(id);
-        }
-
         private void OnFromPositionSelected(Position pos)
         {
-            if(!IsCorrectPlayer())
+            MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+            bool isLastHistoryEntry = MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1;
+            if (selectedHistory != null)
             {
-                return;
+                if (currentState.CurrentPlayer != selectedHistory.NextPlayer)
+                {
+                    return;
+                }
+                if (!isLastHistoryEntry && session.TimelineExist(selectedHistory))
+                {
+                    return;
+                }
             }
-            if (CanCreateTimeline())
-            {
-                CreateTimeline();
-            }
+            
+            GameState stateToUse = historyState ?? currentState;
 
-            IEnumerable<Move> moves = currentState.LegalMovesForPiece(pos);
+            IEnumerable<Move> moves = stateToUse.LegalMovesForPiece(pos);
 
             if (moves.Any())
             {
@@ -197,7 +125,19 @@ namespace GameUI
 
             if (moveCache.TryGetValue(pos, out Move move))
             {
-                if(move.Type == MoveType.PawnPromotion)
+                MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
+                bool isLastHistoryEntry = MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1;
+
+                if (selectedHistory != null && !isLastHistoryEntry)
+                {
+                    if(!session.TimelineExist(selectedHistory))
+                    {
+                        currentBoard = session.CreateTimeline(selectedHistory);
+                        historyState = null;
+                    }
+                }
+                
+                if (move.Type == MoveType.PawnPromotion)
                 {
                     HandlePromotion(move.FromPos, move.ToPos);
                 }
@@ -224,26 +164,13 @@ namespace GameUI
             };
         }
         
-        private GameState GetGameState(BoardType boardType)
-        {
-            return boardType switch
-            {
-                BoardType.Main => gameState,
-                BoardType.TimelineWhite => timeStateWhite,
-                BoardType.TimelineBlack => timeStateBlack,
-                _ => gameState
-            };
-        }
-
         private void HandleMove(Move move)
         {
-            currentState = GetGameState(currentBoard);
-
             Guid? capturedPieceId = currentState.MakeMove(move);
 
             if (capturedPieceId.HasValue)
             {
-                RemovePieceFromAllBoards(capturedPieceId.Value);
+                session.RemovePieceFromAllBoards(capturedPieceId.Value);
             }
 
             DrawBoard(currentState.Board);
@@ -279,11 +206,18 @@ namespace GameUI
                 return;
             }
 
+            bool isLastHistoryEntry = MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1;
+            if (isLastHistoryEntry)
+            {
+                historyState = null;
+                DrawBoard(currentState.Board);
+                return;
+            }
+
             historyState = new GameState(
                 selectedHistory.NextPlayer,
                 selectedHistory.Board.Copy());
 
-            currentState = historyState;
             DrawBoard(historyState.Board);
         }
 
@@ -344,11 +278,8 @@ namespace GameUI
             selectedPos = null;
             HideHighLights();
             moveCache.Clear();
-            timeStateWhite = null;
-            timeStateBlack = null;
-            gameState = new GameState(Player.White, Board.Initial());
+            session = new GameSession(new GameState(Player.White, Board.Initial()));
             currentBoard = BoardType.Main;
-            currentState = GetGameState(currentBoard);
             DrawBoard(currentState.Board);
         }
 
@@ -378,8 +309,8 @@ namespace GameUI
 
         private void MainBoard_Click(object sender, RoutedEventArgs e)
         {
+            historyState = null;
             currentBoard = BoardType.Main;
-            currentState = GetGameState(currentBoard);
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
@@ -387,12 +318,12 @@ namespace GameUI
             
         private void TimelineWhite_Click(object sender, RoutedEventArgs e)
         {
-            if(timeStateWhite == null)
+            historyState = null;
+            if (session.GetBoardState(BoardType.TimelineWhite) == null)
             {
                 return;
             }
             currentBoard = BoardType.TimelineWhite;
-            currentState = GetGameState(currentBoard);
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
@@ -400,12 +331,12 @@ namespace GameUI
 
         private void TimelineBlack_Click(object sender, RoutedEventArgs e)
         {
-            if(timeStateBlack == null)
+            historyState = null;
+            if (session.GetBoardState(BoardType.TimelineBlack) == null)
             {
                 return;
             }
             currentBoard = BoardType.TimelineBlack;
-            currentState = GetGameState(currentBoard);
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);

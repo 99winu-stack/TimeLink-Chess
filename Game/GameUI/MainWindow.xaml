@@ -37,19 +37,22 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Button Grid.Row="0"
+                    <Button Name="MainBoardButton"
+                        Grid.Row="0"
                             Content="Main Board"
                             Margin="10"
                             Style="{StaticResource ButtonStyle}"
                             Click="MainBoard_Click"/>
 
-                    <Button Grid.Row="1"
+                    <Button Name="TimelineWhiteButton"
+                            Grid.Row="1"
                             Content="Timeline White"
                             Margin="10"
                             Style="{StaticResource ButtonStyle}"
                             Click="TimelineWhite_Click"/>
 
-                    <Button Grid.Row="2"
+                    <Button Name="TimelineBlackButton"
+                            Grid.Row="2"
                             Content="Timeline Black"
                             Margin="10"
                             Style="{StaticResource ButtonStyle}"

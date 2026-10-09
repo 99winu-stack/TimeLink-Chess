@@ -128,10 +128,15 @@ namespace GameUI
             {
                 MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
                 bool isLastHistoryEntry = MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1;
-
+                
                 if (selectedHistory != null && !isLastHistoryEntry)
                 {
-                    if(!session.TimelineExist(selectedHistory))
+                    MoveHistory? lastCapture = currentState.GetLastCapture(selectedHistory.NextPlayer);
+                    if (lastCapture != null && MoveHistoryList.SelectedIndex <= MoveHistoryList.Items.IndexOf(lastCapture))
+                    {
+                        return;
+                    }
+                    if (!session.TimelineExist(selectedHistory))
                     {
                         currentBoard = session.CreateTimeline(selectedHistory);
                         UpdateBoardSelectionHighlight();

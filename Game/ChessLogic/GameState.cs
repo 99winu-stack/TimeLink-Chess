@@ -44,8 +44,12 @@ namespace ChessLogic
         {
             Board.SetPawnSkipPosition(CurrentPlayer, null);
             MoveResult result = move.Execute(Board);
-            
-            moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent()));
+
+            Player? capturePlayer = result.CapturedPiece == null
+                ? null
+                : CurrentPlayer;
+
+            moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent(), capturePlayer));
 
             if (result.CaptureOrPawn)
             {
@@ -62,6 +66,11 @@ namespace ChessLogic
             CheckForGameOver();
 
             return result.CapturedPiece?.Id;
+        }
+
+        public MoveHistory? GetLastCapture(Player player)
+        {
+            return moveHistory.LastOrDefault(mh => mh.CapturePlayer == player);
         }
 
         public IEnumerable<Move> AllLegalMovesFor(Player player)

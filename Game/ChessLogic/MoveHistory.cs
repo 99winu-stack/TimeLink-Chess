@@ -11,12 +11,14 @@ namespace ChessLogic
         public Move Move { get; }
         public Board Board { get; }
         public Player NextPlayer {  get; }
+        public Player? CapturePlayer { get; }
 
-        public MoveHistory(Move move, Board board, Player nextPlayer)
+        public MoveHistory(Move move, Board board, Player nextPlayer, Player? capturePlayer)
         {
             Move = move;
             Board = board;
             NextPlayer = nextPlayer;
+            CapturePlayer = capturePlayer;
         }
 
         public override string ToString()

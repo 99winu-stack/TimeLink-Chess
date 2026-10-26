@@ -95,9 +95,22 @@ namespace GameUI
         {
             MoveHistory selectedHistory = MoveHistoryList.SelectedItem as MoveHistory;
             bool isLastHistoryEntry = MoveHistoryList.SelectedIndex == MoveHistoryList.Items.Count - 1;
+            
+            if (selectedHistory == null || isLastHistoryEntry)
+            {
+                if (currentState.CurrentPlayer != session.CurrentPlayer)
+                {
+                    return;
+                }
+                if (!session.CanPlayOnBoard(currentBoard))
+                {
+                    return;
+                }
+            }
+
             if (selectedHistory != null)
             {
-                if (currentState.CurrentPlayer != selectedHistory.NextPlayer)
+                if (session.CurrentPlayer != selectedHistory.NextPlayer)
                 {
                     return;
                 }
@@ -173,7 +186,12 @@ namespace GameUI
         
         private void HandleMove(Move move)
         {
+            Player movingPlayer = session.CurrentPlayer;
+            session.UpdateBoardTimers(currentBoard, movingPlayer);
+
             Guid? capturedPieceId = currentState.MakeMove(move);
+
+            session.SwitchPlayer();
 
             if (capturedPieceId.HasValue)
             {
@@ -182,7 +200,8 @@ namespace GameUI
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
-            UpdateCheckHighlight();
+            UpdateBoardHighlights();
+            UpdateTimerDisplay();
 
             if (currentState.IsGameOver())
             {   
@@ -355,33 +374,74 @@ namespace GameUI
 
         private void UpdateBoardSelectionHighlight()
         {
+            Brush normalColor = new SolidColorBrush(Color.FromRgb(179, 157, 219));
+            Brush selectedColor = new SolidColorBrush(Color.FromRgb(100, 181, 246));
+
+            Brush normalTextColor = Brushes.Gray;
+            Brush selectedTextColor = Brushes.White;
+
             MainBoardButton.BorderBrush = currentBoard == BoardType.Main
-                ? Brushes.LightBlue : (Brush)FindResource("FillColor");
+                ? selectedColor : normalColor;
+            MainBoardButton.Foreground = currentBoard == BoardType.Main
+                ? selectedTextColor : normalTextColor;
 
             TimelineWhiteButton.BorderBrush = currentBoard == BoardType.TimelineWhite
-                ? Brushes.LightBlue : (Brush)FindResource("FillColor");
+                ? selectedColor : normalColor;
+            TimelineWhiteButton.Foreground = currentBoard == BoardType.TimelineWhite
+                ? selectedTextColor : normalTextColor;
 
             TimelineBlackButton.BorderBrush = currentBoard == BoardType.TimelineBlack
-                ? Brushes.LightBlue : (Brush)FindResource("FillColor");
+                ? selectedColor : normalColor;
+            TimelineBlackButton.Foreground = currentBoard == BoardType.TimelineBlack
+                ? selectedTextColor : normalTextColor;
         }
 
-        private void UpdateCheckHighlight()
+        private void UpdateBoardHighlights()
         {
-            CheckBoard(BoardType.Main, MainBoardButton);
-            CheckBoard(BoardType.TimelineWhite, TimelineWhiteButton);
-            CheckBoard(BoardType.TimelineBlack, TimelineBlackButton);
+            CheckBoards(BoardType.Main, MainBoardButton);
+            CheckBoards(BoardType.TimelineWhite, TimelineWhiteButton);
+            CheckBoards(BoardType.TimelineBlack, TimelineBlackButton);
         }
 
-        private void CheckBoard(BoardType type, Button button)
+        private void CheckBoards(BoardType type, Button button)
         {
             GameState state = session.GetBoardState(type);
 
-            bool inCheck = state != null && state.Board.IsInCheck(state.CurrentPlayer);
+            bool inCheck = state != null &&
+                           state.Board.IsInCheck(state.CurrentPlayer);
 
-            Color checkColor = Color.FromArgb(180, 220, 100, 100);
-            button.Background = inCheck
-                ? new SolidColorBrush(checkColor)
-                : Brushes.Transparent;
+            bool forcedBoard = session.GetTimerForcedBoard().Contains(type);
+
+            Color checkColor = Color.FromRgb(212, 154, 88);
+            Color forcedColor = Color.FromRgb(192, 80, 80);
+
+            if (forcedBoard)
+            {
+                button.Background = new SolidColorBrush(forcedColor);
+            }
+            else if (inCheck)
+            {
+                button.Background = new SolidColorBrush(checkColor);
+            }
+            else
+            {
+                button.Background = Brushes.Transparent;
+            }
+        }
+
+        private void UpdateTimerDisplay()
+        {
+            MainBoardButton.Content =
+                $"Main\nW: {session.GetTimerCount(BoardType.Main, Player.White)} | " +
+                $"B: {session.GetTimerCount(BoardType.Main, Player.Black)}";
+
+            TimelineWhiteButton.Content =
+                $"Timeline White\nW: {session.GetTimerCount(BoardType.TimelineWhite, Player.White)} | " +
+                $"B: {session.GetTimerCount(BoardType.TimelineWhite, Player.Black)}";
+
+            TimelineBlackButton.Content =
+                $"Timeline Black\nW: {session.GetTimerCount(BoardType.TimelineBlack, Player.White)} | " +
+                $"B: {session.GetTimerCount(BoardType.TimelineBlack, Player.Black)}";
         }
     }
 }

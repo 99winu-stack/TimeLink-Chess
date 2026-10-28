@@ -76,7 +76,11 @@
 
         public bool ThreefoldRepetition()
         {
-            return stateHistory[stateString] >= 3;
+            return stateHistory[stateString] == 3;
+        }
+        public bool FivefoldRepetition()
+        {
+            return stateHistory[stateString] == 5;
         }
     }
 }

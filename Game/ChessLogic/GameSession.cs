@@ -276,17 +276,16 @@
                 return;
             }
 
-            if (FiftyMoveRule())
+            if (FivefoldRepetition())
             {
-                Result = Result.Draw(EndReason.FiftyMoveRule);
+                Result = Result.Draw(EndReason.FivefoldRepetition);
                 return;
             }
+        }
 
-            if (ThreefoldRepetition())
-            {
-                Result = Result.Draw(EndReason.ThreefoldRepetition);
-                return;
-            }
+        public bool ShouldOfferDraw()
+        {
+            return FiftyMoveRule() || ThreefoldRepetition();
         }
 
         private Result CheckBoardForGameOver(BoardType boardType)
@@ -320,12 +319,12 @@
 
         public bool FiftyMoveRule()
         {
-            return noCaptureOrPawnMoves >= 100;
+            return noCaptureOrPawnMoves == 100;
         }
 
         public bool SeventyFiveMoveRule()
         {
-            return noCaptureOrPawnMoves >= 150;
+            return noCaptureOrPawnMoves == 150;
         }
 
         public bool ThreefoldRepetition()
@@ -333,6 +332,19 @@
             foreach (GameState state in boardStates.Values)
             {
                 if (state.ThreefoldRepetition())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool FivefoldRepetition()
+        {
+            foreach (GameState state in boardStates.Values)
+            {
+                if (state.FivefoldRepetition())
                 {
                     return true;
                 }

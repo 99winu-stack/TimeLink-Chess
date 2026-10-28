@@ -46,9 +46,9 @@ namespace GameUI
             {
                 EndReason.Stalemate => $"STALEMATE - {PlayerString(currentPlayer)} CAN´T MOVE",
                 EndReason.Checkmate => $"CHECKMATE - {PlayerString(currentPlayer)} CAN´T MOVE",
-                EndReason.FiftyMoveRule => "FIFTY-MOVE RULE",
+                EndReason.SeventyFiveMoveRule => "SEVENTY-FIVE-MOVE RULE",
                 EndReason.InsufficientMaterial => "INSUFFICIENT MATERIAL",
-                EndReason.ThreefoldRepetition => "THREEFOLD REPETITION",
+                EndReason.FivefoldRepetition => "FIVEFOLD REPETITION",
                 EndReason.KingCapture => "KING CAN BE CAPTURED",
                 _ => ""
             };

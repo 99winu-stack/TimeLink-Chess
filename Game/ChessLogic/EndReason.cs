@@ -4,10 +4,9 @@
     {
         Checkmate,
         Stalemate,
-        FiftyMoveRule,
         SeventyFiveMoveRule,
         InsufficientMaterial,
-        ThreefoldRepetition,
+        FivefoldRepetition,
         KingCapture,
         Resignation,
         DrawAgreement

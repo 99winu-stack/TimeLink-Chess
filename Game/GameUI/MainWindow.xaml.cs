@@ -213,6 +213,10 @@ namespace GameUI
             {
                 ShowGameOver();
             }
+            else if(session.ShouldOfferDraw())
+            {
+                OfferDraw();
+            }
         }
 
         private void UpdateMoveHistory(GameState currentState)
@@ -511,6 +515,11 @@ namespace GameUI
 
         private void OfferDrawButton_Click(object sender, RoutedEventArgs e)
         {
+            OfferDraw();
+        }
+
+        private void OfferDraw()
+        {
             ShowConfirmation("Offer a draw?", confirmed =>
             {
                 if (!confirmed)
@@ -537,7 +546,6 @@ namespace GameUI
                 });
             });
         }
-
 
         private void AcceptDraw()
         {

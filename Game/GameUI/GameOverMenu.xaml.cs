@@ -11,13 +11,13 @@ namespace GameUI
     {
         public event Action<Option> OptionSelected;
 
-        public GameOverMenu(GameState gameState)
+        public GameOverMenu(GameSession gameSession)
         {
             InitializeComponent();
 
-            Result result = gameState.Result;
+            Result result = gameSession.Result;
             WinnerText.Text = GetWinnerText(result.Winner);
-            ReasonText.Text = GetReassonText(result.Reason, gameState.CurrentPlayer);
+            ReasonText.Text = GetReassonText(result.Reason, gameSession.CurrentPlayer);
         }
 
         private static string GetWinnerText(Player winner)
@@ -49,6 +49,7 @@ namespace GameUI
                 EndReason.FiftyMoveRule => "FIFTY-MOVE RULE",
                 EndReason.InsufficientMaterial => "INSUFFICIENT MATERIAL",
                 EndReason.ThreefoldRepetition => "THREEFOLD REPETITION",
+                EndReason.KingCapture => "KING CAN BE CAPTURED",
                 _ => ""
             };
         }

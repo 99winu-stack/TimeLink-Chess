@@ -23,7 +23,7 @@
             board[FromPos] = null;
             piece.HasMoved = true;
 
-            return new MoveResult(capturedPiece, capture || piece.Type == PieceType.Pawn);
+            return new MoveResult(capturedPiece?.Id, capture || piece.Type == PieceType.Pawn);
         }
     }
 }

@@ -8,12 +8,12 @@ namespace ChessLogic
 {
     public class MoveResult
     {
-        public Piece CapturedPiece { get; }
+        public Guid? CapturedPieceId { get; }
         public bool CaptureOrPawn { get; }
 
-        public MoveResult(Piece capturedPiece, bool captureOrPawn)
+        public MoveResult(Guid? capturedPieceId, bool captureOrPawn)
         {
-            CapturedPiece = capturedPiece;
+            CapturedPieceId = capturedPieceId;
             CaptureOrPawn = captureOrPawn;
         }
     }

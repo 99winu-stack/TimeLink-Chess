@@ -35,7 +35,7 @@
             promotionPiece.HasMoved = true;
             board[ToPos] = promotionPiece;
 
-            return new MoveResult(capturedPiece, true);
+            return new MoveResult(capturedPiece?.Id, true);
         }
     }
 }

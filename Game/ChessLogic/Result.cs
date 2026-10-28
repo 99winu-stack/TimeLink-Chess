@@ -11,9 +11,9 @@
             Reason = reason;
         }
 
-        public static Result Win(Player winner)
+        public static Result Win(Player winner, EndReason reason)
         {
-            return new Result(winner, EndReason.Checkmate);
+            return new Result(winner, reason);
         }
 
         public static Result Draw(EndReason reason)

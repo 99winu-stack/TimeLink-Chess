@@ -1,13 +1,19 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace ChessLogic
+﻿namespace ChessLogic
 {
     public class GameSession
     {
         private readonly Dictionary<BoardType, GameState> boardStates = new();
         private readonly Dictionary<BoardType, BoardTimer> boardTimers = new();
+        private readonly Dictionary<(BoardType Board, Player Player), int> blockedHistoryIndices = new();
         public Player CurrentPlayer { get; private set; }
-        private const int BoardTimerLimit = 4;
+        public Result Result { get; private set; } = null;
+        private const int BoardTimerLimit = 5;
+        private int noCaptureOrPawnMoves = 0;
+
+        public bool IsGameOver()
+        {
+            return Result != null;
+        }
 
         public GameSession(GameState initial)
         {
@@ -66,20 +72,26 @@ namespace ChessLogic
                 .ToList();
         }
 
-        public List<BoardType> GetTimerForcedBoard()
+        public BoardType? GetTimerForcedBoard()
         {
-            return GetPlayableBoards()
-                .Where(boardType => IsTimerLimit(boardType, CurrentPlayer))
-                .ToList();
+            foreach (BoardType boardType in GetPlayableBoards())
+            {
+                if (IsTimerLimit(boardType, CurrentPlayer))
+                {
+                    return boardType;
+                }
+            }
+
+            return null;
         }
 
         public bool CanPlayOnBoard(BoardType boardType)
         {
-            List<BoardType> forcedBoards = GetTimerForcedBoard();
+            BoardType? forcedBoard = GetTimerForcedBoard();
 
-            if (forcedBoards.Count > 0)
+            if (forcedBoard.HasValue)
             {
-                return forcedBoards.Contains(boardType);
+                return forcedBoard.Value == boardType;
             }
 
             return GetPlayableBoards().Contains(boardType);
@@ -128,6 +140,31 @@ namespace ChessLogic
             };
         }
 
+        private void BlockOldHistoryEntries(Player player)
+        {
+            foreach (var pair in boardStates)
+            {
+                blockedHistoryIndices[(pair.Key, player)] =
+                    pair.Value.MoveHistory.Count;
+            }
+        }
+
+        public bool IsHistoryEntryBlocked(BoardType boardType, Player player, int historyIndex)
+        {
+            return blockedHistoryIndices.TryGetValue((boardType, player), out int blockedIndex)
+                && historyIndex < blockedIndex;
+        }
+
+        public void RemovePieceFromAllBoards(Guid capturedId, Player player)
+        {
+            foreach (var state in boardStates.Values)
+            {
+                state.Board.RemovePieceWithID(capturedId);
+            }
+
+            BlockOldHistoryEntries(player);
+        }
+
         public BoardType CreateTimeline(MoveHistory selectedHistory)
         {
             var newState = new GameState(selectedHistory.NextPlayer, selectedHistory.Board.Copy());
@@ -138,19 +175,16 @@ namespace ChessLogic
             return timeline;
         }
 
-        public void RemovePieceFromAllBoards(Guid capturedId)
-        {
-            foreach (var state in boardStates.Values)
-            {
-                state.Board.RemovePieceWithID(capturedId);
-            }
-        }
-
         public bool CanWhiteCaptureKing()
         {
             foreach (var state in boardStates.Values)
             {
                 Board board = state.Board;
+
+                if (state.CurrentPlayer != Player.White)
+                {
+                    continue;
+                }
 
                 foreach (Position pos in board.PiecePositionsFor(Player.White))
                 {
@@ -171,6 +205,11 @@ namespace ChessLogic
             {
                 Board board = state.Board;
 
+                if (state.CurrentPlayer != Player.Black)
+                {
+                    continue;
+                }
+
                 foreach (Position pos in board.PiecePositionsFor(Player.Black))
                 {
                     Piece piece = board[pos];
@@ -181,6 +220,123 @@ namespace ChessLogic
                     }
                 }
             }
+            return false;
+        }
+
+        public Result CheckForKingCapture()
+        {
+            bool whiteCanCapture = CanWhiteCaptureKing();
+            bool blackCanCapture = CanBlackCaptureKing();
+
+            if (CurrentPlayer == Player.White && whiteCanCapture)
+            {
+                return Result.Win(Player.White, EndReason.KingCapture);
+            }
+            else if (CurrentPlayer == Player.Black && blackCanCapture)
+            {
+                return Result.Win(Player.Black, EndReason.KingCapture);
+            }
+
+            return null;
+        }
+
+        public void CheckForGameOver()
+        {
+            if (Result != null)
+            {
+                return;
+            }
+
+            Result kingCaptureResult = CheckForKingCapture();
+
+            if (kingCaptureResult != null)
+            {
+                Result = kingCaptureResult;
+                return;
+            }
+
+            BoardType? forcedBoard = GetTimerForcedBoard();
+
+            if (forcedBoard.HasValue)
+            {
+                Result boardResult = CheckBoardForGameOver(forcedBoard.Value);
+
+                if (boardResult != null)
+                {
+                    Result = boardResult;
+                }
+
+                return;
+            }
+            
+            if (SeventyFiveMoveRule())
+            {
+                Result = Result.Draw(EndReason.SeventyFiveMoveRule);
+                return;
+            }
+
+            if (FiftyMoveRule())
+            {
+                Result = Result.Draw(EndReason.FiftyMoveRule);
+                return;
+            }
+
+            if (ThreefoldRepetition())
+            {
+                Result = Result.Draw(EndReason.ThreefoldRepetition);
+                return;
+            }
+        }
+
+        private Result CheckBoardForGameOver(BoardType boardType)
+        {
+            GameState state = boardStates[boardType];
+
+            if (state.AllLegalMovesFor(CurrentPlayer).Any())
+            {
+                return null;
+            }
+
+            if (state.Board.IsInCheck(CurrentPlayer))
+            {
+                return Result.Win(CurrentPlayer.Opponent(), EndReason.Checkmate);
+            }
+
+            return Result.Draw(EndReason.Stalemate);
+        }
+
+        public void UpdateMoveCounter(MoveResult result)
+        {
+            if (result.CaptureOrPawn)
+            {
+                noCaptureOrPawnMoves = 0;
+            }
+            else
+            {
+                noCaptureOrPawnMoves++;
+            }
+        }
+
+        public bool FiftyMoveRule()
+        {
+            return noCaptureOrPawnMoves >= 100;
+        }
+
+        public bool SeventyFiveMoveRule()
+        {
+            return noCaptureOrPawnMoves >= 150;
+        }
+
+        public bool ThreefoldRepetition()
+        {
+            foreach (GameState state in boardStates.Values)
+            {
+                if (state.ThreefoldRepetition())
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
     }

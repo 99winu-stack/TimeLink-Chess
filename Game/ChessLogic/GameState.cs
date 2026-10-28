@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChessLogic
+﻿namespace ChessLogic
 {
     public class GameState
     {
         public Board Board { get; }
         public Player CurrentPlayer { get; private set; }
         public Result Result { get; private set; } = null;
-
         private readonly List<MoveHistory> moveHistory = new List<MoveHistory>();
         public IReadOnlyList<MoveHistory> MoveHistory => moveHistory.AsReadOnly();
-
-        private int noCaptureOrPawnMoves = 0;
         private string stateString;
         private readonly Dictionary<string, int> stateHistory = new Dictionary<string, int>();
 
@@ -40,37 +31,22 @@ namespace ChessLogic
             return MoveCandidates.Where(move => move.IsLegal(Board));
         }
 
-        public Guid? MakeMove(Move move)
+        public MoveResult MakeMove(Move move)
         {
             Board.SetPawnSkipPosition(CurrentPlayer, null);
             MoveResult result = move.Execute(Board);
 
-            Player? capturePlayer = result.CapturedPiece == null
-                ? null
-                : CurrentPlayer;
-
-            moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent(), capturePlayer));
+            moveHistory.Add(new MoveHistory(move, Board.Copy(), CurrentPlayer.Opponent()));
 
             if (result.CaptureOrPawn)
             {
-                noCaptureOrPawnMoves = 0;
                 stateHistory.Clear();
-            }
-            else
-            {
-                noCaptureOrPawnMoves++;
             }
 
             CurrentPlayer = CurrentPlayer.Opponent();
             UpdateStateString();
-            CheckForGameOver();
 
-            return result.CapturedPiece?.Id;
-        }
-
-        public MoveHistory? GetLastCapture(Player player)
-        {
-            return moveHistory.LastOrDefault(mh => mh.CapturePlayer == player);
+            return result;
         }
 
         public IEnumerable<Move> AllLegalMovesFor(Player player)
@@ -82,44 +58,6 @@ namespace ChessLogic
             });
 
             return moveCandidates.Where(move => move.IsLegal(Board));
-        }
-
-        private void CheckForGameOver()
-        {
-            if (!AllLegalMovesFor(CurrentPlayer).Any())
-            {
-                if (Board.IsInCheck(CurrentPlayer))
-                {
-                    Result = Result.Win(CurrentPlayer.Opponent());
-                }
-                else
-                {
-                    Result = Result.Draw(EndReason.Stalemate);
-                }
-            }
-            else if(Board.InsufficientMaterial())
-            {
-                Result = Result.Draw(EndReason.InsufficientMaterial);
-            }
-            else if (FiftyMoveRule())
-            {
-                Result = Result.Draw(EndReason.FiftyMoveRule);
-            }
-            else if (ThreefoldRepetition())
-            {
-                Result = Result.Draw(EndReason.ThreefoldRepetition);
-            }
-        }
-
-        public bool IsGameOver()
-        {
-            return Result != null;
-        }
-
-        private bool FiftyMoveRule()
-        {
-            int fullMoves = noCaptureOrPawnMoves / 2;
-            return fullMoves >= 50;
         }
 
         private void UpdateStateString()
@@ -136,9 +74,9 @@ namespace ChessLogic
             }
         }
 
-        private bool ThreefoldRepetition()
+        public bool ThreefoldRepetition()
         {
-            return stateHistory[stateString] == 3;
+            return stateHistory[stateString] >= 3;
         }
     }
 }

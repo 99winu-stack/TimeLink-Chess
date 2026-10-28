@@ -48,5 +48,11 @@
             <Setter Property="FontSize" Value="28"/>
         </Style>
 
+        <Color x:Key="NormalBoardColor">#FFB39DDB</Color>
+        <Color x:Key="SelectedBoardColor">#FF64B5F6</Color>
+        
+        <Color x:Key="CheckColor">#FFD49A58</Color>
+        <Color x:Key="ForcedColor">#FFC05050</Color>
+        
     </Application.Resources>
 </Application>

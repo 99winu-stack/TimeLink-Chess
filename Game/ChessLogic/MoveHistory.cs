@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChessLogic
+﻿namespace ChessLogic
 {
     public class MoveHistory
     {
         public Move Move { get; }
         public Board Board { get; }
         public Player NextPlayer {  get; }
-        public Player? CapturePlayer { get; }
 
-        public MoveHistory(Move move, Board board, Player nextPlayer, Player? capturePlayer)
+        public MoveHistory(Move move, Board board, Player nextPlayer)
         {
             Move = move;
             Board = board;
             NextPlayer = nextPlayer;
-            CapturePlayer = capturePlayer;
         }
 
         public override string ToString()

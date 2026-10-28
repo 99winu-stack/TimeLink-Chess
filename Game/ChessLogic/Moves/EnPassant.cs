@@ -21,7 +21,7 @@
             new NormalMove(FromPos, ToPos).Execute(board);
             board[capturePos] = null;
 
-            return new MoveResult(capturedPiece, true);
+            return new MoveResult(capturedPiece?.Id, true);
         }
     }
 }

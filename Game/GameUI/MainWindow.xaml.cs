@@ -144,11 +144,11 @@ namespace GameUI
                 
                 if (selectedHistory != null && !isLastHistoryEntry)
                 {
-                    MoveHistory? lastCapture = currentState.GetLastCapture(selectedHistory.NextPlayer);
-                    if (lastCapture != null && MoveHistoryList.SelectedIndex <= MoveHistoryList.Items.IndexOf(lastCapture))
+                    if (session.IsHistoryEntryBlocked(currentBoard, selectedHistory.NextPlayer, MoveHistoryList.SelectedIndex))
                     {
                         return;
                     }
+
                     if (!session.TimelineExist(selectedHistory))
                     {
                         currentBoard = session.CreateTimeline(selectedHistory);
@@ -189,22 +189,24 @@ namespace GameUI
             Player movingPlayer = session.CurrentPlayer;
             session.UpdateBoardTimers(currentBoard, movingPlayer);
 
-            Guid? capturedPieceId = currentState.MakeMove(move);
-
+            MoveResult result = currentState.MakeMove(move);
+            session.UpdateMoveCounter(result);
             session.SwitchPlayer();
 
-            if (capturedPieceId.HasValue)
+            if (result.CapturedPieceId.HasValue)
             {
-                session.RemovePieceFromAllBoards(capturedPieceId.Value);
+                session.RemovePieceFromAllBoards(result.CapturedPieceId.Value, movingPlayer);
             }
+
+            session.CheckForGameOver();
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
             UpdateBoardHighlights();
             UpdateTimerDisplay();
 
-            if (currentState.IsGameOver())
-            {   
+            if (session.IsGameOver())
+            {
                 ShowGameOver();
             }
         }
@@ -283,7 +285,7 @@ namespace GameUI
 
         private void ShowGameOver()
         {
-            GameOverMenu gameOverMenu = new GameOverMenu(currentState);
+            GameOverMenu gameOverMenu = new GameOverMenu(session);
             MenuContainer.Content = gameOverMenu;
 
             gameOverMenu.OptionSelected += option =>
@@ -307,7 +309,11 @@ namespace GameUI
             moveCache.Clear();
             session = new GameSession(new GameState(Player.White, Board.Initial()));
             currentBoard = BoardType.Main;
+            MoveHistoryList.Items.Clear();
             DrawBoard(currentState.Board);
+            UpdateTimerDisplay();
+            UpdateBoardHighlights();
+            UpdateBoardSelectionHighlight();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -374,8 +380,8 @@ namespace GameUI
 
         private void UpdateBoardSelectionHighlight()
         {
-            Brush normalColor = new SolidColorBrush(Color.FromRgb(179, 157, 219));
-            Brush selectedColor = new SolidColorBrush(Color.FromRgb(100, 181, 246));
+            Brush normalColor = new SolidColorBrush((Color)Application.Current.Resources["NormalBoardColor"]);
+            Brush selectedColor = new SolidColorBrush((Color)Application.Current.Resources["SelectedBoardColor"]);
 
             Brush normalTextColor = Brushes.Gray;
             Brush selectedTextColor = Brushes.White;
@@ -410,10 +416,10 @@ namespace GameUI
             bool inCheck = state != null &&
                            state.Board.IsInCheck(state.CurrentPlayer);
 
-            bool forcedBoard = session.GetTimerForcedBoard().Contains(type);
+            bool forcedBoard = session.GetTimerForcedBoard() == type;
 
-            Color checkColor = Color.FromRgb(212, 154, 88);
-            Color forcedColor = Color.FromRgb(192, 80, 80);
+            Color checkColor = (Color)Application.Current.Resources["CheckColor"];
+            Color forcedColor = (Color)Application.Current.Resources["ForcedColor"];
 
             if (forcedBoard)
             {

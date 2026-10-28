@@ -2,7 +2,13 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
+    <Compile Update="ConfirmationMenu.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="GameOverMenu.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="InformationMenu.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="PauseMenu.xaml.cs">

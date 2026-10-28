@@ -9,6 +9,7 @@
         public Result Result { get; private set; } = null;
         private const int BoardTimerLimit = 5;
         private int noCaptureOrPawnMoves = 0;
+        public Player? DrawOfferBy { get; private set; }
 
         public bool IsGameOver()
         {
@@ -338,6 +339,39 @@
             }
 
             return false;
+        }
+
+        public void Resign()
+        {
+            if (Result != null)
+            {
+                return;
+            }
+
+            Result = Result.Win(CurrentPlayer.Opponent(), EndReason.Resignation);
+        }
+
+        public bool OfferDraw()
+        {
+            if (Result != null || DrawOfferBy != null)
+                return false;
+
+            DrawOfferBy = CurrentPlayer;
+            return true;
+        }
+
+        public void RejectDraw()
+        {
+            DrawOfferBy = null;
+        }
+
+        public void AcceptDraw()
+        {
+            if (Result != null || DrawOfferBy == null)
+                return;
+
+            Result = Result.Draw(EndReason.DrawAgreement);
+            DrawOfferBy = null;
         }
     }
 }

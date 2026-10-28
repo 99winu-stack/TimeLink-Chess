@@ -32,6 +32,8 @@ namespace GameUI
             session = new GameSession(new GameState(Player.White, Board.Initial()));
             currentBoard = BoardType.Main;
             DrawBoard(currentState.Board);
+
+            UpdateGameInfo();
         }
 
         private void InitilaizeBoard()
@@ -200,6 +202,8 @@ namespace GameUI
 
             session.CheckForGameOver();
 
+            UpdateGameInfo();
+
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
             UpdateBoardHighlights();
@@ -302,6 +306,18 @@ namespace GameUI
             };
         }
 
+        private void ShowConfirmation(string question, Action<bool> onConfirmation)
+        {
+            ConfirmationMenu confirmationMenu = new ConfirmationMenu(question);
+            MenuContainer.Content = confirmationMenu;
+
+            confirmationMenu.ConfirmationSelected += confirmed =>
+            {
+                MenuContainer.Content = null;
+                onConfirmation(confirmed);
+            };
+        }
+
         private void RestartGame()
         {
             selectedPos = null;
@@ -309,8 +325,10 @@ namespace GameUI
             moveCache.Clear();
             session = new GameSession(new GameState(Player.White, Board.Initial()));
             currentBoard = BoardType.Main;
+            historyState = null;
             MoveHistoryList.Items.Clear();
             DrawBoard(currentState.Board);
+            UpdateGameInfo();
             UpdateTimerDisplay();
             UpdateBoardHighlights();
             UpdateBoardSelectionHighlight();
@@ -348,6 +366,7 @@ namespace GameUI
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
+            UpdateGameInfo();
         }
             
         private void TimelineWhite_Click(object sender, RoutedEventArgs e)
@@ -362,6 +381,7 @@ namespace GameUI
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
+            UpdateGameInfo();
         }
 
         private void TimelineBlack_Click(object sender, RoutedEventArgs e)
@@ -376,6 +396,7 @@ namespace GameUI
 
             DrawBoard(currentState.Board);
             UpdateMoveHistory(currentState);
+            UpdateGameInfo();
         }
 
         private void UpdateBoardSelectionHighlight()
@@ -448,6 +469,98 @@ namespace GameUI
             TimelineBlackButton.Content =
                 $"Timeline Black\nW: {session.GetTimerCount(BoardType.TimelineBlack, Player.White)} | " +
                 $"B: {session.GetTimerCount(BoardType.TimelineBlack, Player.Black)}";
+        }
+        private void UpdateGameInfo()
+        {
+            CurrentPlayerText.Text = session.CurrentPlayer.ToString();
+
+            GameStatusText.Text = session.IsGameOver()
+                ? "Game over"
+                : "Game in progress";
+
+            BoardPlayerText.Text = currentState.CurrentPlayer + " to move";
+
+            bool whiteInCheck = currentState.Board.IsInCheck(Player.White);
+            bool blackInCheck = currentState.Board.IsInCheck(Player.Black);
+            
+            if (whiteInCheck)
+            {
+                BoardCheckText.Text = "White is in check";
+            }
+            else if (blackInCheck)
+            {
+                BoardCheckText.Text = "Black is in check";
+            }
+            else
+            {
+                BoardCheckText.Text = "No check";
+            }
+        }
+        private void ResignButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowConfirmation("Resign the match?", confirmed =>
+            {
+                if (confirmed)
+                {
+                    session.Resign();
+                    UpdateGameInfo();
+                    ShowGameOver();
+                }
+            });
+        }
+
+        private void OfferDrawButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowConfirmation("Offer a draw?", confirmed =>
+            {
+                if (!confirmed)
+                    return;
+
+                bool success = session.OfferDraw();
+
+                if (!success)
+                {
+                    ShowConfirmation("Draw not possible.", _ => { });
+                    return;
+                }
+
+                ShowConfirmation("Accept draw?", accepted =>
+                {
+                    if (accepted)
+                    {
+                        AcceptDraw();
+                    }
+                    else
+                    {
+                        RejectDraw();
+                    }
+                });
+            });
+        }
+
+
+        private void AcceptDraw()
+        {
+            session.AcceptDraw();
+            UpdateGameInfo();
+            ShowGameOver();
+        }
+
+        private void RejectDraw()
+        {
+            session.RejectDraw();
+            ShowInformation("DRAW REJECTED");
+        }
+
+        private void ShowInformation(string message)
+        {
+            InformationMenu informationMenu = new InformationMenu(message);
+            MenuContainer.Content = informationMenu;
+
+            informationMenu.OkSelected += () =>
+            {
+                MenuContainer.Content = null;
+            };
         }
     }
 }

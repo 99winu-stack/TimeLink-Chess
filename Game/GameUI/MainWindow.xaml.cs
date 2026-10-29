@@ -192,6 +192,18 @@ namespace GameUI
             session.UpdateBoardTimers(currentBoard, movingPlayer);
 
             MoveResult result = currentState.MakeMove(move);
+
+            if (move.Type == MoveType.PawnPromotion)
+            {
+                Piece promotedPiece = currentState.Board[move.ToPos];
+
+                session.PromotePieceOnAllBoards(
+                    promotedPiece.Id,
+                    promotedPiece.Type,
+                    promotedPiece.Color
+                );
+            }
+
             session.UpdateMoveCounter(result);
             session.SwitchPlayer();
 

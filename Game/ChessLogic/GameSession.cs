@@ -166,6 +166,35 @@
             BlockOldHistoryEntries(player);
         }
 
+        public void PromotePieceOnAllBoards(Guid pawnId, PieceType newType, Player color)
+        {
+            foreach (var state in boardStates.Values)
+            {
+                Board board = state.Board;
+
+                foreach (Position pos in board.PiecePositions())
+                {
+                    Piece piece = board[pos];
+
+                    if (piece.Id != pawnId)
+                    {
+                        continue;
+                    }
+
+                    Piece promotedPiece = newType switch
+                    {
+                        PieceType.Knight => new Knight(color, pawnId),
+                        PieceType.Bishop => new Bishop(color, pawnId),
+                        PieceType.Rook => new Rook(color, pawnId),
+                        _ => new Queen(color, pawnId)
+                    };
+
+                    promotedPiece.HasMoved = true;
+                    board[pos] = promotedPiece;
+                }
+            }
+        }
+
         public BoardType CreateTimeline(MoveHistory selectedHistory)
         {
             var newState = new GameState(selectedHistory.NextPlayer, selectedHistory.Board.Copy());

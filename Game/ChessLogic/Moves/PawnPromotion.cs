@@ -13,14 +13,14 @@
             this.newType = newType;
         }
 
-        private Piece CreatePromotionPiece(Player color)
+        private Piece CreatePromotionPiece(Player color, Guid pawnId)
         {
             return newType switch
             {
-                PieceType.Knight => new Knight(color),
-                PieceType.Bishop => new Bishop(color),
-                PieceType.Rook => new Rook(color),
-                _ => new Queen(color)
+                PieceType.Knight => new Knight(color, pawnId),
+                PieceType.Bishop => new Bishop(color, pawnId),
+                PieceType.Rook => new Rook(color, pawnId),
+                _ => new Queen(color, pawnId)
             };
         }
 
@@ -31,7 +31,7 @@
 
             board[FromPos] = null;
 
-            Piece promotionPiece = CreatePromotionPiece(pawn.Color);
+            Piece promotionPiece = CreatePromotionPiece(pawn.Color, pawn.Id);
             promotionPiece.HasMoved = true;
             board[ToPos] = promotionPiece;
 

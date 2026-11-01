@@ -19,6 +19,10 @@ A chess game with a unique timeline-linking mechanic.
 - Being checkmated on another board does not cause a loss if the player is not required to move on that board.
 - If a player is checkmated on a board when that board requires the player to move, they lose the game.
 - If a player can capture the opponent's king on their next move, they win the game immediately.
+- A player loses if they are checkmated and cannot create a new timeline.
+- A player loses if they are checkmated on both playable boards.
+- A player loses if they are checkmated on one playable board and stalemated on the other.
+- A draw is declared if a player is stalemated on both playable boards.
 
 # Development
 - This project starts by implementing a classic chess game following a YouTube tutorial:
@@ -26,5 +30,7 @@ https://www.youtube.com/watch?v=GEkSE6eZMGc&list=PLFk1_lkqT8MahHPi40ON-jyo5wiqny
 - The project was then extended with custom mechanics, including linked timelines, cross-timeline captures, and timeline-specific gameplay rules.
 
 # Future Plans
+- Add a bot opponent.
+- Implement game state import and export functionality.
 - Implement online multiplayer.
 - Provide a downloadable release.

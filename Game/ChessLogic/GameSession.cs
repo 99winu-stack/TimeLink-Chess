@@ -195,6 +195,51 @@
             }
         }
 
+        private bool CanCreateTimeline(BoardType boardType, Player player)
+        {
+            GameState state = boardStates[boardType];
+
+            if (boardStates.ContainsKey(player == Player.White
+                ? BoardType.TimelineWhite
+                : BoardType.TimelineBlack))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < state.MoveHistory.Count; i++)
+            {
+                MoveHistory history = state.MoveHistory[i];
+
+                if (history.NextPlayer != player)
+                {
+                    continue;
+                }
+
+                if (TimelineExist(history))
+                {
+                    continue;
+                }
+
+                if (IsHistoryEntryBlocked(boardType, player, i))
+                {
+                    continue;
+                }
+
+                GameState historyState = new GameState(
+                    history.NextPlayer,
+                    history.Board.Copy());
+
+                if (!historyState.AllLegalMovesFor(player).Any())
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         public BoardType CreateTimeline(MoveHistory selectedHistory)
         {
             var newState = new GameState(selectedHistory.NextPlayer, selectedHistory.Board.Copy());
@@ -287,18 +332,25 @@
 
             BoardType? forcedBoard = GetTimerForcedBoard();
 
-            if (forcedBoard.HasValue)
-            {
-                Result boardResult = CheckBoardForGameOver(forcedBoard.Value);
+            List<BoardType> boardsToCheck = forcedBoard.HasValue
+                ? new List<BoardType> { forcedBoard.Value }
+                : GetPlayableBoards();
 
-                if (boardResult != null)
+            Result boardResult = CheckPlayableBoardsForGameOver(boardsToCheck);
+
+            if (boardResult != null)
+            {
+                if (!forcedBoard.HasValue && boardsToCheck.Count == 1
+                    && boardResult.Reason == EndReason.Checkmate
+                    && CanCreateTimeline(boardsToCheck[0], CurrentPlayer))
                 {
-                    Result = boardResult;
+                    return;
                 }
 
+                Result = boardResult;
                 return;
             }
-            
+
             if (SeventyFiveMoveRule())
             {
                 Result = Result.Draw(EndReason.SeventyFiveMoveRule);
@@ -321,17 +373,64 @@
         {
             GameState state = boardStates[boardType];
 
-            if (state.AllLegalMovesFor(CurrentPlayer).Any())
+            List<Move> legalMoves =
+                state.AllLegalMovesFor(CurrentPlayer).ToList();
+
+            bool isInCheck = state.Board.IsInCheck(CurrentPlayer);
+
+            if (legalMoves.Any())
             {
                 return null;
             }
 
-            if (state.Board.IsInCheck(CurrentPlayer))
+            if (isInCheck)
             {
                 return Result.Win(CurrentPlayer.Opponent(), EndReason.Checkmate);
             }
 
             return Result.Draw(EndReason.Stalemate);
+        }
+
+        private Result CheckPlayableBoardsForGameOver(List<BoardType> boardsToCheck)
+        {
+            bool hasLegalMoves = false;
+            bool hasCheckmate = false;
+            bool hasStalemate = false;
+
+            foreach (BoardType boardType in boardsToCheck)
+            {
+                Result result = CheckBoardForGameOver(boardType);
+
+                if (result == null)
+                {
+                    hasLegalMoves = true;
+                }
+                else if (result.Reason == EndReason.Checkmate)
+                {
+                    hasCheckmate = true;
+                }
+                else if (result.Reason == EndReason.Stalemate)
+                {
+                    hasStalemate = true;
+                }
+            }
+
+            if (hasLegalMoves)
+            {
+                return null;
+            }
+
+            if (hasCheckmate)
+            {
+                return Result.Win(CurrentPlayer.Opponent(), EndReason.Checkmate);
+            }
+
+            if (hasStalemate)
+            {
+                return Result.Draw(EndReason.Stalemate);
+            }
+
+            return null;
         }
 
         public void UpdateMoveCounter(MoveResult result)
